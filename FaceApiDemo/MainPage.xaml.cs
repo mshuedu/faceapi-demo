@@ -34,6 +34,7 @@ namespace FaceApiDemo
     {
         private const string FaceApiKey = "234e6e305e2e49febfe835a85e69a157";
         private const int ControlLoopDelayMilliseconds = 5000; // Update the CountdownStoryboard as well!
+        private static readonly FaceServiceClient faceServiceClient = new FaceServiceClient(FaceApiKey);
 
         private MediaCapture mediaCapture;
 
@@ -103,24 +104,27 @@ namespace FaceApiDemo
                 CountdownProgressBar.Value = 100;
                 CameraFlashStoryboard.Begin();
 
-                var previewProperties = mediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview) as VideoEncodingProperties;
-                var videoFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)previewProperties.Width, (int)previewProperties.Height);
-                var capturedFrame = await mediaCapture.GetPreviewFrameAsync(videoFrame);
+                Face[] recognizedFaces;
+                using (var stream = new InMemoryRandomAccessStream())
+                {
+                    await mediaCapture.CapturePhotoToStreamAsync(ImageEncodingProperties.CreatePng(), stream);
+                    
+                    // Display camera picture
+                    await UpdateStatusAsync("Displaying sample picture...");
 
-                // Display camera picture
-                await UpdateStatusAsync("Displaying sample picture...");
+                    stream.Seek(0);
+                    var bitmapImage = new BitmapImage();
+                    await bitmapImage.SetSourceAsync(stream);
+                    ResultImage.Source = bitmapImage;
 
-                SoftwareBitmap softwareBitmap = capturedFrame.SoftwareBitmap;
-                WriteableBitmap writeableBitmap = new WriteableBitmap(softwareBitmap.PixelWidth, softwareBitmap.PixelHeight);
-                softwareBitmap.CopyToBuffer(writeableBitmap.PixelBuffer);
-                ResultImage.Source = writeableBitmap;
+                    // Send picture for recognition
+                    // We need to encode the raw image as a JPEG to make sure the service can recognize it.
+                    // TODO use a MemoryStream instead of a file
+                    await UpdateStatusAsync("Uploading picture to Microsoft Project Oxford Face API...");
+                    stream.Seek(0);
 
-                // Send picture for recognition
-                // We need to encode the raw image as a JPEG to make sure the service can recognize it.
-                // TODO use a MemoryStream instead of a file
-                await UpdateStatusAsync("Uploading picture to Microsoft Project Oxford Face API...");
-                var recognizedFaces = await GetFaces(softwareBitmap);
-
+                    recognizedFaces = await GetFaces(stream.AsStreamForRead());
+                }
                 // Display recognition results
                 // Wait a few seconds seconds to give viewers a chance to appreciate all we've done
                 await UpdateStatusAsync($"{recognizedFaces.Count()} face(s) found by Microsoft 'Project Oxford' Face API");
@@ -145,16 +149,11 @@ namespace FaceApiDemo
             }
         }
 
-        private static async Task<Face[]> GetFaces(SoftwareBitmap softwareBitmap)
+        private static async Task<Face[]> GetFaces(Stream stream)
         {
             using (var ms = new InMemoryRandomAccessStream())
             {
-                var bitmapEncoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, ms);
-                bitmapEncoder.SetSoftwareBitmap(softwareBitmap);
-                await bitmapEncoder.FlushAsync();
-                var faceServiceClient = new FaceServiceClient(FaceApiKey);
-                ms.Seek(0);
-                var result = await faceServiceClient.DetectAsync(ms.AsStreamForRead(), false, true, true, false);
+                var result = await faceServiceClient.DetectAsync(stream, false, true, true, false);
                 return result;
             }
         }
