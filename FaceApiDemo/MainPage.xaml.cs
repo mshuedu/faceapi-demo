@@ -131,7 +131,6 @@ namespace FaceApiDemo
 
                 // Send picture for recognition
                 // We need to encode the raw image as a JPEG to make sure the service can recognize it.
-                // TODO use a MemoryStream instead of a file
                 await UpdateStatusAsync("Uploading picture to Microsoft Project Oxford Face API...");
                 var recognizedFaces = await GetFaces(softwareBitmap);
 
