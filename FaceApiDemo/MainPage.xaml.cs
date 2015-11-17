@@ -119,25 +119,7 @@ namespace FaceApiDemo
                 // We need to encode the raw image as a JPEG to make sure the service can recognize it.
                 // TODO use a MemoryStream instead of a file
                 await UpdateStatusAsync("Uploading picture to Microsoft Project Oxford Face API...");
-
-                var tempImageFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("FaceApiDemoFile.jpg", CreationCollisionOption.GenerateUniqueName);
-                using (var stream = await tempImageFile.OpenAsync(FileAccessMode.ReadWrite))
-                {
-                    var bitmapEncoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
-                    bitmapEncoder.SetSoftwareBitmap(softwareBitmap);
-                    await bitmapEncoder.FlushAsync();
-                }
-                Face[] recognizedFaces;
-                using (var stream = await tempImageFile.OpenStreamForReadAsync())
-                {
-                    var faceServiceClient = new FaceServiceClient(FaceApiKey);
-                    recognizedFaces = await faceServiceClient.DetectAsync(stream, false, true, true, false);
-                }
-                try
-                {
-                    await tempImageFile.DeleteAsync();
-                }
-                catch { }
+                var recognizedFaces = await GetFaces(softwareBitmap);
 
                 // Display recognition results
                 // Wait a few seconds seconds to give viewers a chance to appreciate all we've done
@@ -160,6 +142,20 @@ namespace FaceApiDemo
 
                 CountdownStoryboard.Begin();
                 await Task.Delay(ControlLoopDelayMilliseconds);
+            }
+        }
+
+        private static async Task<Face[]> GetFaces(SoftwareBitmap softwareBitmap)
+        {
+            using (var ms = new InMemoryRandomAccessStream())
+            {
+                var bitmapEncoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, ms);
+                bitmapEncoder.SetSoftwareBitmap(softwareBitmap);
+                await bitmapEncoder.FlushAsync();
+                var faceServiceClient = new FaceServiceClient(FaceApiKey);
+                ms.Seek(0);
+                var result = await faceServiceClient.DetectAsync(ms.AsStreamForRead(), false, true, true, false);
+                return result;
             }
         }
 
