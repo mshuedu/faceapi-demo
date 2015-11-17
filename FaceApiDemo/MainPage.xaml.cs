@@ -16,6 +16,7 @@ using Windows.Media.Capture;
 using Windows.Media.MediaProperties;
 using Windows.Storage;
 using Windows.Storage.Streams;
+using Windows.UI;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -25,6 +26,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Shapes;
 
 namespace FaceApiDemo
 {
@@ -97,8 +99,10 @@ namespace FaceApiDemo
 
                 // TODO focus if possible
                 //await mediaCapture.VideoDeviceController.FocusControl.FocusAsync();
-                CameraFlashStoryboard.Begin();
+                FaceResultsGrid.Children.Clear();
                 CountdownProgressBar.Value = 100;
+                CameraFlashStoryboard.Begin();
+
                 var previewProperties = mediaCapture.VideoDeviceController.GetMediaStreamProperties(MediaStreamType.VideoPreview) as VideoEncodingProperties;
                 var videoFrame = new VideoFrame(BitmapPixelFormat.Bgra8, (int)previewProperties.Width, (int)previewProperties.Height);
                 var capturedFrame = await mediaCapture.GetPreviewFrameAsync(videoFrame);
@@ -116,7 +120,7 @@ namespace FaceApiDemo
                 // TODO use a MemoryStream instead of a file
                 await UpdateStatusAsync("Uploading picture to Microsoft Project Oxford Face API...");
 
-                var tempImageFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("FaceApiDemoFile.jpg", CreationCollisionOption.ReplaceExisting);
+                var tempImageFile = await ApplicationData.Current.TemporaryFolder.CreateFileAsync("FaceApiDemoFile.jpg", CreationCollisionOption.GenerateUniqueName);
                 using (var stream = await tempImageFile.OpenAsync(FileAccessMode.ReadWrite))
                 {
                     var bitmapEncoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, stream);
@@ -136,22 +140,24 @@ namespace FaceApiDemo
                 catch { }
 
                 // Display recognition results
-                //await UpdateStatusAsync("Displaying Microsoft 'Project Oxford' Face API results...");
-                StringBuilder stringBuilder = new StringBuilder();
-                if (recognizedFaces.Count() == 0)
-                {
-                    stringBuilder.AppendLine("No faces found");
-                }
-                else
-                {
-                    foreach (var face in recognizedFaces)
-                    {
-                        stringBuilder.AppendLine($"Gender: {face.Attributes.Gender} Age: {face.Attributes.Age}");
-                    }
-                }
-                await UpdateStatusAsync(stringBuilder.ToString());
-
                 // Wait a few seconds seconds to give viewers a chance to appreciate all we've done
+                await UpdateStatusAsync($"{recognizedFaces.Count()} face(s) found by Microsoft 'Project Oxford' Face API");
+
+                foreach (var face in recognizedFaces)
+                {
+                    Rectangle rectangle = new Rectangle();
+                    rectangle.Stroke = new SolidColorBrush(Colors.Black);
+                    rectangle.StrokeThickness = 3;
+
+                    rectangle.HorizontalAlignment = HorizontalAlignment.Left;
+                    rectangle.VerticalAlignment = VerticalAlignment.Top;
+                    rectangle.Margin = new Thickness(face.FaceRectangle.Left, face.FaceRectangle.Top, 0, 0);
+                    rectangle.Height = face.FaceRectangle.Height;
+                    rectangle.Width = face.FaceRectangle.Width;
+
+                    FaceResultsGrid.Children.Add(rectangle);
+                }
+
                 CountdownStoryboard.Begin();
                 await Task.Delay(ControlLoopDelayMilliseconds);
             }

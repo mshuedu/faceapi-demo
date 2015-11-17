@@ -33,6 +33,7 @@
             </Storyboard>
         </Grid.Resources>
         <Image x:Name="ResultImage" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.RowSpan="99" Grid.ColumnSpan="99"></Image>
+        <Grid x:Name="FaceResultsGrid" Grid.ColumnSpan="99" Grid.RowSpan="99"></Grid>
         <Rectangle x:Name="CameraFlashRectangle" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="White" Opacity="0" Grid.RowSpan="99" Grid.ColumnSpan="99"></Rectangle>
         <Border BorderThickness="2" BorderBrush="Gray" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,20,20,0" Grid.Row="0" Grid.Column="1">
             <CaptureElement x:Name="PreviewCaptureElement"></CaptureElement>
