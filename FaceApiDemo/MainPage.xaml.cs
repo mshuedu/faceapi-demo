@@ -46,6 +46,7 @@ namespace FaceApiDemo
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+            Window.Current.SizeChanged += Current_SizeChanged;
 
 #if !DEBUG
             try
@@ -61,6 +62,19 @@ namespace FaceApiDemo
             Application.Current.Exit();
             }
 #endif
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+            Window.Current.SizeChanged -= Current_SizeChanged;
+        }
+
+        private void Current_SizeChanged(object sender, Windows.UI.Core.WindowSizeChangedEventArgs e)
+        {
+            // If the window is resized, delete any face rectangles.
+            // TODO Recalculate face rectangle positions instead of just deleting them.
+            FaceResultsGrid.Children.Clear();
         }
 
         private async Task StartPreviewAsync()
@@ -108,7 +122,7 @@ namespace FaceApiDemo
                 using (var stream = new InMemoryRandomAccessStream())
                 {
                     await mediaCapture.CapturePhotoToStreamAsync(ImageEncodingProperties.CreatePng(), stream);
-                    
+
                     // Display camera picture
                     await UpdateStatusAsync("Displaying sample picture...");
 
@@ -119,29 +133,46 @@ namespace FaceApiDemo
 
                     // Send picture for recognition
                     // We need to encode the raw image as a JPEG to make sure the service can recognize it.
-                    // TODO use a MemoryStream instead of a file
                     await UpdateStatusAsync("Uploading picture to Microsoft Project Oxford Face API...");
                     stream.Seek(0);
 
                     recognizedFaces = await GetFaces(stream.AsStreamForRead());
-                }
-                // Display recognition results
-                // Wait a few seconds seconds to give viewers a chance to appreciate all we've done
-                await UpdateStatusAsync($"{recognizedFaces.Count()} face(s) found by Microsoft 'Project Oxford' Face API");
+                    // Display recognition results
+                    // Wait a few seconds seconds to give viewers a chance to appreciate all we've done
+                    await UpdateStatusAsync($"{recognizedFaces.Count()} face(s) found by Microsoft 'Project Oxford' Face API");
 
-                foreach (var face in recognizedFaces)
-                {
-                    Rectangle rectangle = new Rectangle();
-                    rectangle.Stroke = new SolidColorBrush(Colors.Black);
-                    rectangle.StrokeThickness = 3;
+                    // The face rectangles received from Face API are measured in pixels of the raw image.
+                    // We need to calculate the extra scaling and displacement that results from the raw image
+                    // being displayed in a larger container.
+                    // We use the FaceResultsGrid as a basis for the calculation, because the ResultImage control's ActualHeight and ActualWidth
+                    // properties have the same aspect ratio as the image, and not the aspect ratio of the screen.
+                    double widthScaleFactor = FaceResultsGrid.ActualWidth / bitmapImage.PixelWidth;
+                    double heightScaleFactor = FaceResultsGrid.ActualHeight / bitmapImage.PixelHeight;
+                    double scaleFactor = Math.Min(widthScaleFactor, heightScaleFactor);
 
-                    rectangle.HorizontalAlignment = HorizontalAlignment.Left;
-                    rectangle.VerticalAlignment = VerticalAlignment.Top;
-                    rectangle.Margin = new Thickness(face.FaceRectangle.Left, face.FaceRectangle.Top, 0, 0);
-                    rectangle.Height = face.FaceRectangle.Height;
-                    rectangle.Width = face.FaceRectangle.Width;
+                    bool isTheBlackSpaceOnTheLeft = widthScaleFactor > heightScaleFactor;
+                    double extraLeftNeeded = 0;
+                    double extraTopNeeded = 0;
+                    if (isTheBlackSpaceOnTheLeft) extraLeftNeeded = (FaceResultsGrid.ActualWidth - scaleFactor * bitmapImage.PixelWidth) / 2;
+                    else extraTopNeeded = (FaceResultsGrid.ActualHeight - scaleFactor * bitmapImage.PixelHeight) / 2;
 
-                    FaceResultsGrid.Children.Add(rectangle);
+                    foreach (var face in recognizedFaces)
+                    {
+                        Rectangle rectangle = new Rectangle();
+                        rectangle.Stroke = new SolidColorBrush(Colors.Black);
+                        rectangle.StrokeThickness = 3;
+
+                        rectangle.HorizontalAlignment = HorizontalAlignment.Left;
+                        rectangle.VerticalAlignment = VerticalAlignment.Top;
+                        rectangle.Margin = new Thickness(
+                            extraLeftNeeded + scaleFactor * face.FaceRectangle.Left,
+                            extraTopNeeded + scaleFactor * face.FaceRectangle.Top,
+                            0, 0);
+                        rectangle.Height = scaleFactor * face.FaceRectangle.Height;
+                        rectangle.Width = scaleFactor * face.FaceRectangle.Width;
+
+                        FaceResultsGrid.Children.Add(rectangle);
+                    }
                 }
 
                 CountdownStoryboard.Begin();
