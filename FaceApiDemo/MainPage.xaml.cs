@@ -32,7 +32,7 @@ namespace FaceApiDemo
 {
     public sealed partial class MainPage : Page
     {
-        private const string FaceApiKey = "234e6e305e2e49febfe835a85e69a157";
+        private const string FaceApiKey = ""; // key expires on November 24, 2015
         private const int ControlLoopDelayMilliseconds = 5000; // Update the CountdownStoryboard as well!
         private static readonly FaceServiceClient faceServiceClient = new FaceServiceClient(FaceApiKey);
 
@@ -179,12 +179,25 @@ namespace FaceApiDemo
                         faceInfoTextBlock.Text = $"{face.Attributes.Gender}, {face.Attributes.Age}";
                         Border faceInfoBorder = new Border();
                         faceInfoBorder.Background = new SolidColorBrush(Colors.Black);
-                        faceInfoTextBlock.Padding = new Thickness(5);
+                        faceInfoBorder.Padding = new Thickness(5);
                         faceInfoBorder.Child = faceInfoTextBlock;
                         faceInfoBorder.HorizontalAlignment = HorizontalAlignment.Left;
                         faceInfoBorder.VerticalAlignment = VerticalAlignment.Top;
                         faceInfoBorder.Margin = new Thickness(faceOutlineRectangleLeft, faceOutlineRectangleTop - 50, 0, 0);
                         FaceResultsGrid.Children.Add(faceInfoBorder);
+
+                        TextBlock carInfoTextBlock = new TextBlock();
+                        carInfoTextBlock.Foreground = new SolidColorBrush(Colors.White);
+                        carInfoTextBlock.FontSize = 30;
+                        carInfoTextBlock.Text = GetCarRecommendation(face.Attributes.Gender, (int)face.Attributes.Age);
+                        Border carInfoBorder = new Border();
+                        carInfoBorder.Background = new SolidColorBrush(Colors.Black);
+                        carInfoBorder.Padding = new Thickness(5);
+                        carInfoBorder.Child = carInfoTextBlock;
+                        carInfoBorder.HorizontalAlignment = HorizontalAlignment.Left;
+                        carInfoBorder.VerticalAlignment = VerticalAlignment.Top;
+                        carInfoBorder.Margin = new Thickness(faceOutlineRectangleLeft, faceOutlineRectangleTop + faceOutlineRectangleHeight, 0, 0);
+                        FaceResultsGrid.Children.Add(carInfoBorder);
                     }
                 }
 
@@ -199,6 +212,24 @@ namespace FaceApiDemo
             {
                 var result = await faceServiceClient.DetectAsync(stream, false, true, true, false);
                 return result;
+            }
+        }
+
+        private string GetCarRecommendation(string gender, int age)
+        {
+            if (gender == "male")
+            {
+                if (age < 25) return "A3 Sportback";
+                else if (age < 35) return "TT Coupe";
+                else if (age < 55) return "A6 Sedan";
+                else return "S5 Cabriolet";
+            }
+            else
+            {
+                if (age < 25) return "allroad";
+                else if (age < 35) return "S7";
+                else if (age < 55) return "Q7";
+                else return "SQ5";
             }
         }
 
