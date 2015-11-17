@@ -45,6 +45,7 @@ namespace FaceApiDemo
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+            Window.Current.SizeChanged += Current_SizeChanged;
 
 #if !DEBUG
             try
@@ -60,6 +61,19 @@ namespace FaceApiDemo
             Application.Current.Exit();
             }
 #endif
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+            Window.Current.SizeChanged -= Current_SizeChanged;
+        }
+
+        private void Current_SizeChanged(object sender, Windows.UI.Core.WindowSizeChangedEventArgs e)
+        {
+            // If the window is resized, delete any face rectangles.
+            // TODO Recalculate face rectangle positions instead of just deleting them.
+            FaceResultsGrid.Children.Clear();
         }
 
         private async Task StartPreviewAsync()
@@ -143,6 +157,21 @@ namespace FaceApiDemo
                 // Wait a few seconds seconds to give viewers a chance to appreciate all we've done
                 await UpdateStatusAsync($"{recognizedFaces.Count()} face(s) found by Microsoft 'Project Oxford' Face API");
 
+                // The face rectangles received from Face API are measured in pixels of the raw image.
+                // We need to calculate the extra scaling and displacement that results from the raw image
+                // being displayed in a larger container.
+                // We use the FaceResultsGrid as a basis for the calculation, because the ResultImage control's ActualHeight and ActualWidth
+                // properties have the same aspect ratio as the image, and not the aspect ratio of the screen.
+                double widthScaleFactor = FaceResultsGrid.ActualWidth / softwareBitmap.PixelWidth;
+                double heightScaleFactor = FaceResultsGrid.ActualHeight / softwareBitmap.PixelHeight;
+                double scaleFactor = Math.Min(widthScaleFactor, heightScaleFactor);
+
+                bool isTheBlackSpaceOnTheLeft = widthScaleFactor > heightScaleFactor;
+                double extraLeftNeeded = 0;
+                double extraTopNeeded = 0;
+                if (isTheBlackSpaceOnTheLeft) extraLeftNeeded = (FaceResultsGrid.ActualWidth - scaleFactor * softwareBitmap.PixelWidth) / 2;
+                else extraTopNeeded = (FaceResultsGrid.ActualHeight - scaleFactor * softwareBitmap.PixelHeight) / 2;
+
                 foreach (var face in recognizedFaces)
                 {
                     Rectangle rectangle = new Rectangle();
@@ -151,9 +180,12 @@ namespace FaceApiDemo
 
                     rectangle.HorizontalAlignment = HorizontalAlignment.Left;
                     rectangle.VerticalAlignment = VerticalAlignment.Top;
-                    rectangle.Margin = new Thickness(face.FaceRectangle.Left, face.FaceRectangle.Top, 0, 0);
-                    rectangle.Height = face.FaceRectangle.Height;
-                    rectangle.Width = face.FaceRectangle.Width;
+                    rectangle.Margin = new Thickness(
+                        extraLeftNeeded + scaleFactor * face.FaceRectangle.Left, 
+                        extraTopNeeded + scaleFactor * face.FaceRectangle.Top, 
+                        0, 0);
+                    rectangle.Height = scaleFactor * face.FaceRectangle.Height;
+                    rectangle.Width = scaleFactor * face.FaceRectangle.Width;
 
                     FaceResultsGrid.Children.Add(rectangle);
                 }
