@@ -155,20 +155,33 @@ namespace FaceApiDemo
 
                 foreach (var face in recognizedFaces)
                 {
-                    Rectangle rectangle = new Rectangle();
-                    rectangle.Stroke = new SolidColorBrush(Colors.Black);
-                    rectangle.StrokeThickness = 3;
+                    var faceOutlineRectangleLeft = extraLeftNeeded + scaleFactor * face.FaceRectangle.Left;
+                    var faceOutlineRectangleTop = extraTopNeeded + scaleFactor * face.FaceRectangle.Top;
+                    var faceOutlineRectangleHeight = scaleFactor * face.FaceRectangle.Height;
+                    var faceOutlineRectangleWidth = scaleFactor * face.FaceRectangle.Width;
 
-                    rectangle.HorizontalAlignment = HorizontalAlignment.Left;
-                    rectangle.VerticalAlignment = VerticalAlignment.Top;
-                    rectangle.Margin = new Thickness(
-                        extraLeftNeeded + scaleFactor * face.FaceRectangle.Left, 
-                        extraTopNeeded + scaleFactor * face.FaceRectangle.Top, 
-                        0, 0);
-                    rectangle.Height = scaleFactor * face.FaceRectangle.Height;
-                    rectangle.Width = scaleFactor * face.FaceRectangle.Width;
+                    Rectangle faceOutlineRectangle = new Rectangle();
+                    faceOutlineRectangle.Stroke = new SolidColorBrush(Colors.Black);
+                    faceOutlineRectangle.StrokeThickness = 3;
+                    faceOutlineRectangle.HorizontalAlignment = HorizontalAlignment.Left;
+                    faceOutlineRectangle.VerticalAlignment = VerticalAlignment.Top;
+                    faceOutlineRectangle.Margin = new Thickness(faceOutlineRectangleLeft, faceOutlineRectangleTop, 0, 0);
+                    faceOutlineRectangle.Height = faceOutlineRectangleHeight;
+                    faceOutlineRectangle.Width = faceOutlineRectangleWidth;
+                    FaceResultsGrid.Children.Add(faceOutlineRectangle);
 
-                    FaceResultsGrid.Children.Add(rectangle);
+                    TextBlock faceInfoTextBlock = new TextBlock();
+                    faceInfoTextBlock.Foreground = new SolidColorBrush(Colors.White);
+                    faceInfoTextBlock.FontSize = 30;
+                    faceInfoTextBlock.Text = $"{face.Attributes.Gender}, {face.Attributes.Age}";
+                    Border faceInfoBorder = new Border();
+                    faceInfoBorder.Background = new SolidColorBrush(Colors.Black);
+                    faceInfoTextBlock.Padding = new Thickness(5);
+                    faceInfoBorder.Child = faceInfoTextBlock;
+                    faceInfoBorder.HorizontalAlignment = HorizontalAlignment.Left;
+                    faceInfoBorder.VerticalAlignment = VerticalAlignment.Top;
+                    faceInfoBorder.Margin = new Thickness(faceOutlineRectangleLeft, faceOutlineRectangleTop - 50, 0, 0);
+                    FaceResultsGrid.Children.Add(faceInfoBorder);
                 }
 
                 CountdownStoryboard.Begin();
