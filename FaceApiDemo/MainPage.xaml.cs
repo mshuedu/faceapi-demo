@@ -32,7 +32,7 @@ namespace FaceApiDemo
 {
     public sealed partial class MainPage : Page
     {
-        private const string FaceApiKey = ""; // key expires on November 24, 2015
+        private const string FaceApiKey = "234e6e305e2e49febfe835a85e69a157"; // key expires on November 24, 2015
         private const int ControlLoopDelayMilliseconds = 5000; // Update the CountdownStoryboard as well!
         private static readonly FaceServiceClient faceServiceClient = new FaceServiceClient(FaceApiKey);
 
@@ -118,10 +118,12 @@ namespace FaceApiDemo
                 CountdownProgressBar.Value = 100;
                 CameraFlashStoryboard.Begin();
 
-                Face[] recognizedFaces;
                 using (var stream = new InMemoryRandomAccessStream())
                 {
-                    await mediaCapture.CapturePhotoToStreamAsync(ImageEncodingProperties.CreatePng(), stream);
+                    var imageEncodingProperties = ImageEncodingProperties.CreatePng();
+                    imageEncodingProperties.Width = 320;
+                    imageEncodingProperties.Height = 200;
+                    await mediaCapture.CapturePhotoToStreamAsync(imageEncodingProperties, stream);
 
                     // Display camera picture
                     await UpdateStatusAsync("Displaying sample picture...");
@@ -136,7 +138,7 @@ namespace FaceApiDemo
                     await UpdateStatusAsync("Uploading picture to Microsoft Project Oxford Face API...");
                     stream.Seek(0);
 
-                    recognizedFaces = await GetFaces(stream.AsStreamForRead());
+                    var recognizedFaces = await GetFaces(stream.AsStreamForRead());
                     // Display recognition results
                     // Wait a few seconds seconds to give viewers a chance to appreciate all we've done
                     await UpdateStatusAsync($"{recognizedFaces.Count()} face(s) found by Microsoft 'Project Oxford' Face API");
@@ -208,11 +210,9 @@ namespace FaceApiDemo
 
         private static async Task<Face[]> GetFaces(Stream stream)
         {
-            using (var ms = new InMemoryRandomAccessStream())
-            {
-                var result = await faceServiceClient.DetectAsync(stream, false, true, true, false);
-                return result;
-            }
+
+            var result = await faceServiceClient.DetectAsync(stream, false, true, true, false);
+            return result;
         }
 
         private string GetCarRecommendation(string gender, int age)
