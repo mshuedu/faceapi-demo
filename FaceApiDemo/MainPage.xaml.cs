@@ -32,7 +32,7 @@ namespace FaceApiDemo
 {
     public sealed partial class MainPage : Page
     {
-        private const string FaceApiKey = "234e6e305e2e49febfe835a85e69a157"; // key expires on November 24, 2015
+        private const string FaceApiKey = "c43de4470d9c41dabc5292d3356098ec";
         private const int ControlLoopDelayMilliseconds = 5000; // Update the CountdownStoryboard as well!
         private static readonly FaceServiceClient faceServiceClient = new FaceServiceClient(FaceApiKey);
 
