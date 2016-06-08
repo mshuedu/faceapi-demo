@@ -1,0 +1,1 @@
+MainPackage=C:\Users\balintf\OneDrive\Work\EA\!Demos\faceapi-demo\FaceApiDemo\bin\x64\Release\FaceApiDemo_1.2.0.0_x64.appx

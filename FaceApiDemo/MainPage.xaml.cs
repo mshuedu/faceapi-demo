@@ -37,6 +37,7 @@ namespace FaceApiDemo
         private static readonly FaceServiceClient faceServiceClient = new FaceServiceClient(FaceApiKey);
 
         private MediaCapture mediaCapture;
+        private Random random = new Random();
 
         public MainPage()
         {
@@ -79,7 +80,7 @@ namespace FaceApiDemo
 
         private async Task StartPreviewAsync()
         {
-            await UpdateStatusAsync("Initializing preview video feed...");
+            await UpdateStatusAsync("Előnézeti kép előkészítése...");
 
             // Attempt to get the front camera if one is available, but use any camera device if not
             DeviceInformation cameraDevice;
@@ -110,7 +111,7 @@ namespace FaceApiDemo
             while (true)
             {
                 // Take camera picture
-                await UpdateStatusAsync("Taking still picture...");
+                await UpdateStatusAsync("Fotózás...");
 
                 // TODO focus if possible
                 //await mediaCapture.VideoDeviceController.FocusControl.FocusAsync();
@@ -126,7 +127,7 @@ namespace FaceApiDemo
                     await mediaCapture.CapturePhotoToStreamAsync(imageEncodingProperties, stream);
 
                     // Display camera picture
-                    await UpdateStatusAsync("Displaying sample picture...");
+                    await UpdateStatusAsync("Minta megjelenítése...");
 
                     stream.Seek(0);
                     var bitmapImage = new BitmapImage();
@@ -135,13 +136,17 @@ namespace FaceApiDemo
 
                     // Send picture for recognition
                     // We need to encode the raw image as a JPEG to make sure the service can recognize it.
-                    await UpdateStatusAsync("Uploading picture to Microsoft Project Oxford Face API...");
+                    await UpdateStatusAsync("Kép elküldése a Microsoft Cognitive Services Face API-nak...");
                     stream.Seek(0);
 
                     var recognizedFaces = await GetFaces(stream.AsStreamForRead());
+                    var recommendations = GetRecommendations(recognizedFaces);
+                    var adults = recognizedFaces.Count(f => f.Attributes.Age >= 18);
+                    var children = recognizedFaces.Count(f => f.Attributes.Age < 18);
+
                     // Display recognition results
                     // Wait a few seconds seconds to give viewers a chance to appreciate all we've done
-                    await UpdateStatusAsync($"{recognizedFaces.Count()} face(s) found by Microsoft 'Project Oxford' Face API");
+                    await UpdateStatusAsync($"{adults} felnőtt, {children} gyerek. A tájékoztatás nem minősül ajánlattételnek, részletek a bankfiókban vagy a kh.hu-n.");
 
                     // The face rectangles received from Face API are measured in pixels of the raw image.
                     // We need to calculate the extra scaling and displacement that results from the raw image
@@ -178,7 +183,7 @@ namespace FaceApiDemo
                         TextBlock faceInfoTextBlock = new TextBlock();
                         faceInfoTextBlock.Foreground = new SolidColorBrush(Colors.White);
                         faceInfoTextBlock.FontSize = 30;
-                        faceInfoTextBlock.Text = $"{face.Attributes.Gender}, {face.Attributes.Age}";
+                        faceInfoTextBlock.Text = $"{GetGenderString(face.Attributes.Gender)}, {face.Attributes.Age}";
                         Border faceInfoBorder = new Border();
                         faceInfoBorder.Background = new SolidColorBrush(Colors.Black);
                         faceInfoBorder.Padding = new Thickness(5);
@@ -188,18 +193,21 @@ namespace FaceApiDemo
                         faceInfoBorder.Margin = new Thickness(faceOutlineRectangleLeft, faceOutlineRectangleTop - 50, 0, 0);
                         FaceResultsGrid.Children.Add(faceInfoBorder);
 
-                        TextBlock carInfoTextBlock = new TextBlock();
-                        carInfoTextBlock.Foreground = new SolidColorBrush(Colors.White);
-                        carInfoTextBlock.FontSize = 30;
-                        carInfoTextBlock.Text = GetCarRecommendation(face.Attributes.Gender, (int)face.Attributes.Age);
-                        Border carInfoBorder = new Border();
-                        carInfoBorder.Background = new SolidColorBrush(Colors.Black);
-                        carInfoBorder.Padding = new Thickness(5);
-                        carInfoBorder.Child = carInfoTextBlock;
-                        carInfoBorder.HorizontalAlignment = HorizontalAlignment.Left;
-                        carInfoBorder.VerticalAlignment = VerticalAlignment.Top;
-                        carInfoBorder.Margin = new Thickness(faceOutlineRectangleLeft, faceOutlineRectangleTop + faceOutlineRectangleHeight, 0, 0);
-                        FaceResultsGrid.Children.Add(carInfoBorder);
+                        string recommendation = "";
+                        if (recommendations.ContainsKey(face.FaceId)) recommendation = recommendations[face.FaceId];
+
+                        TextBlock recommendationInfoTextBlock = new TextBlock();
+                        recommendationInfoTextBlock.Foreground = new SolidColorBrush(Colors.White);
+                        recommendationInfoTextBlock.FontSize = 30;
+                        recommendationInfoTextBlock.Text = recommendation;
+                        Border recommendationInfoBorder = new Border();
+                        recommendationInfoBorder.Background = new SolidColorBrush(Colors.Black);
+                        recommendationInfoBorder.Padding = new Thickness(5);
+                        recommendationInfoBorder.Child = recommendationInfoTextBlock;
+                        recommendationInfoBorder.HorizontalAlignment = HorizontalAlignment.Left;
+                        recommendationInfoBorder.VerticalAlignment = VerticalAlignment.Top;
+                        recommendationInfoBorder.Margin = new Thickness(faceOutlineRectangleLeft, faceOutlineRectangleTop + faceOutlineRectangleHeight, 0, 0);
+                        FaceResultsGrid.Children.Add(recommendationInfoBorder);
                     }
                 }
 
@@ -215,21 +223,217 @@ namespace FaceApiDemo
             return result;
         }
 
-        private string GetCarRecommendation(string gender, int age)
+        private string GetGenderString(string originalValue)
         {
-            if (gender == "male")
+            if (originalValue == "male")
+                return "férfi";
+            else
+                return "nő";
+        }
+
+        /// <summary>
+        /// Gets recommendations for a group of faces and returns them indexed by Face ID.
+        /// </summary>
+        private Dictionary<Guid, string> GetRecommendations(Face[] faces)
+        {
+            // Create recommendations dictionary
+            var recommendations = new Dictionary<Guid, string>();
+
+            // First, let's see if this is a recognized group. 
+            // If it is, assign a group recommendation to everyone.
+            int adults = faces.Count(f => f.Attributes.Age >= 18);
+            int children = faces.Count(f => f.Attributes.Age < 18);
+            string groupRecommendation = null;
+
+            #region Group recommendations
+            if (adults == 1 && children == 1)
             {
-                if (age < 25) return "A3 Sportback";
-                else if (age < 35) return "TT Coupe";
-                else if (age < 55) return "A6 Sedan";
-                else return "S5 Cabriolet";
+                groupRecommendation = GetRandomRecommendationFromList
+                    (new List<string>
+                    {
+                        "Lakáscélú hitel állam támogatással",
+                        "K&H trambulin bankszámla és K&H lakásbiztosítás"
+                    });
+            }
+            else if (adults == 1 && children == 2)
+            {
+                groupRecommendation = GetRandomRecommendationFromList
+                    (new List<string>
+                    {
+                        "Családok Otthonteremtési kedvezménye (CSOK)",
+                        "K&H tervező megtakarítási számla"
+                    });
+            }
+            else if (adults == 1 && children == 3)
+            {
+                groupRecommendation = GetRandomRecommendationFromList
+                    (new List<string>
+                    {
+                        "Családok Otthonteremtési kedvezménye (CSOK)",
+                        "K&H trambulin megtakarítási betétszámla"
+                    });
+            }
+            else if (adults == 2 && children == 1)
+            {
+                groupRecommendation = GetRandomRecommendationFromList
+                    (new List<string>
+                    {
+                        "Lakáscélú hitel állam támogatással",
+                        "K&H trambulin bankszámla és K&H lakásbiztosítás"
+                    });
+            }
+            else if (adults == 2 && children == 2)
+            {
+                groupRecommendation = GetRandomRecommendationFromList
+                    (new List<string>
+                    {
+                        "Családok Otthonteremtési kedvezménye (CSOK)",
+                        "K&H tervező megtakarítási számla és K&H lakásbiztosítás"
+                    });
+            }
+            else if (adults == 2 && children == 3)
+            {
+                groupRecommendation = GetRandomRecommendationFromList
+                    (new List<string>
+                    {
+                        "Családok Otthonteremtési kedvezménye (CSOK)",
+                        "K&H hozamhalmozó életbiztosítás és K&H trambulin megtakarítási betétszámla"
+                    });
+            }
+            #endregion
+
+            // This is a recognized group. Give everyone the same recommendation.
+            if (groupRecommendation != null)
+            {
+                foreach (var face in faces) recommendations.Add(face.FaceId, groupRecommendation);
+            }
+            // This is not a recognized group. Give individualized recommendations.
+            else
+            {
+                foreach (var face in faces)
+                {
+                    string individualRecommendation = "";
+                    #region Male recommendations
+                    if (face.Attributes.Gender == "male")
+                    {
+                        if (face.Attributes.Age <= 18)
+                        {
+                            individualRecommendation = GetRandomRecommendationFromList(new List<string>
+                            {
+                                "K&H trambulin megtakarítási betétszámla",
+                                "K&H trambulin bankszámla"
+                            });
+                        }
+                        else if (face.Attributes.Age <= 25)
+                        {
+                            individualRecommendation = GetRandomRecommendationFromList(new List<string>
+                            {
+                                "K&H tervező megtakarítási számla",
+                                "Lakáshitel",
+                                "K&H mobilbank",
+                                "K&H lakásbiztosítás"
+                            });
+                        }
+                        else if (face.Attributes.Age <= 35)
+                        {
+                            individualRecommendation = GetRandomRecommendationFromList(new List<string>
+                            {
+
+                                "Lakáshitel",
+                                "K&H nyugdíjelőtakarékossági számla",
+                                "K&H bővített plusz számlacsomag",
+                                "Családok Otthonteremtési kedvezménye (CSOK)"
+                            });
+                        }
+                        else if (face.Attributes.Age <= 40)
+                        {
+                            individualRecommendation = GetRandomRecommendationFromList(new List<string>
+                            {
+                                "K&H rendszeres díjas nyugdíjbiztosítás",
+                                "K&H World Mastercard plusz hitelkártya",
+                                "K&H lakásbiztosítás",
+                                "K&H hozamhalmozó életbiztosítás"
+                            });
+                        }
+                        else
+                        {
+                            individualRecommendation = GetRandomRecommendationFromList(new List<string>
+                            {
+                                "K&H hozamhalmozó életbiztosítás",
+                                "K&H bővített plusz számlacsomag",
+                                "K&H lakásbiztosítás",
+                                "K&H tervező megtakarítási számla"
+                            });
+                        }
+                    }
+                    #endregion
+                    #region Female recommendations
+                    else
+                    {
+                        if (face.Attributes.Age <= 18)
+                        {
+                            individualRecommendation = GetRandomRecommendationFromList(new List<string>
+                            {
+                                "K&H trambulin megtakarítási betétszámla",
+                                "K&H trambulin bankszámla"
+                            });
+                        }
+                        else if (face.Attributes.Age <= 25)
+                        {
+                            individualRecommendation = GetRandomRecommendationFromList(new List<string>
+                            {
+                                "K&H tervező megtakarítási számla",
+                                "K&H biztostárs utasbiztosítás",
+                                "K&H minimum plusz számlacsomag",
+                                "K&H lakásbiztosítás"
+                            });
+                        }
+                        else if (face.Attributes.Age <= 35)
+                        {
+                            individualRecommendation = GetRandomRecommendationFromList(new List<string>
+                            {
+                                "Hitelkártya",
+                                "Lakáshitel",
+                                "K&H lakásbiztosítás",
+                                "K&H bővített plusz számlacsomag"
+                            });
+                        }
+                        else if (face.Attributes.Age <= 40)
+                        {
+                            individualRecommendation = GetRandomRecommendationFromList(new List<string>
+                            {
+                                "K&H kényelmi plusz számlacsomag",
+                                "K&H nyugdíjelőtakarékossági számla",
+                                "K&H lakásbiztosítás"
+                            });
+                        }
+                        else
+                        {
+                            individualRecommendation = GetRandomRecommendationFromList(new List<string>
+                            {
+                                "K&H lakásbiztosítás",
+                                "K&H World Mastercard plusz hitelkártya",
+                                "K&H tervező megtakarítási számla"
+                            });
+                        }
+                    }
+                    #endregion
+                    recommendations.Add(face.FaceId, individualRecommendation);
+                }
+            }
+
+            return recommendations;
+        }
+
+        private string GetRandomRecommendationFromList(List<string> recommendations)
+        {
+            if (recommendations.Count > 0)
+            {
+                return recommendations[random.Next(0, recommendations.Count)];
             }
             else
             {
-                if (age < 25) return "allroad";
-                else if (age < 35) return "S7";
-                else if (age < 55) return "Q7";
-                else return "SQ5";
+                return "Nincs ajánlás";
             }
         }
 
