@@ -262,16 +262,16 @@
           "System.Xml.XmlSerializer": "4.0.10"
         }
       },
-      "Microsoft.ProjectOxford.Face/0.5.0.2": {
+      "Microsoft.ProjectOxford.Face/1.1.0": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "6.0.8"
         },
         "compile": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         },
         "runtime": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
@@ -2194,16 +2194,16 @@
           "System.Xml.XmlSerializer": "4.0.10"
         }
       },
-      "Microsoft.ProjectOxford.Face/0.5.0.2": {
+      "Microsoft.ProjectOxford.Face/1.1.0": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "6.0.8"
         },
         "compile": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         },
         "runtime": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
@@ -3976,16 +3976,16 @@
           "System.Xml.XmlSerializer": "4.0.10"
         }
       },
-      "Microsoft.ProjectOxford.Face/0.5.0.2": {
+      "Microsoft.ProjectOxford.Face/1.1.0": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "6.0.8"
         },
         "compile": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         },
         "runtime": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
@@ -5756,16 +5756,16 @@
           "runtimes/win10-x64/native/_._": {}
         }
       },
-      "Microsoft.ProjectOxford.Face/0.5.0.2": {
+      "Microsoft.ProjectOxford.Face/1.1.0": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "6.0.8"
         },
         "compile": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         },
         "runtime": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
@@ -7538,16 +7538,16 @@
           "System.Xml.XmlSerializer": "4.0.10"
         }
       },
-      "Microsoft.ProjectOxford.Face/0.5.0.2": {
+      "Microsoft.ProjectOxford.Face/1.1.0": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "6.0.8"
         },
         "compile": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         },
         "runtime": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
@@ -9318,16 +9318,16 @@
           "runtimes/win10-x86/native/_._": {}
         }
       },
-      "Microsoft.ProjectOxford.Face/0.5.0.2": {
+      "Microsoft.ProjectOxford.Face/1.1.0": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "6.0.8"
         },
         "compile": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         },
         "runtime": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
@@ -11100,16 +11100,16 @@
           "System.Xml.XmlSerializer": "4.0.10"
         }
       },
-      "Microsoft.ProjectOxford.Face/0.5.0.2": {
+      "Microsoft.ProjectOxford.Face/1.1.0": {
         "type": "package",
         "dependencies": {
           "Newtonsoft.Json": "6.0.8"
         },
         "compile": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         },
         "runtime": {
-          "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll": {}
+          "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll": {}
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
@@ -13262,15 +13262,14 @@
         "runtimes/win81-x86/native/api-ms-win-security-cpwl-l1-1-0.dll"
       ]
     },
-    "Microsoft.ProjectOxford.Face/0.5.0.2": {
-      "sha512": "GV1yrhJo+IXhcDHiB9YkQgfupYQVaq8QUmECgJJLJoJThNyeL1oHpN6evj1bmSdCgXWUxG2VFWrp+KCcZ4nCmw==",
-      "type": "Package",
+    "Microsoft.ProjectOxford.Face/1.1.0": {
+      "sha512": "df1kQa8UoOjOw5DPXNNyAs2KVu1BFkq7fgS+qFHQO+u1g6Vz7DRrx+vvepyo2WYBoHWCw2GM1NeOqLdD4gHlRQ==",
+      "type": "package",
+      "path": "Microsoft.ProjectOxford.Face/1.1.0",
       "files": [
+        "Microsoft.ProjectOxford.Face.1.1.0.nupkg.sha512",
         "Microsoft.ProjectOxford.Face.nuspec",
-        "[Content_Types].xml",
-        "_rels/.rels",
-        "lib/portable-net45+dnxcore50+win+wpa81/Microsoft.ProjectOxford.Face.dll",
-        "package/services/metadata/core-properties/5ab766f044f244aca1b1cfed62c1c061.psmdcp"
+        "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Microsoft.ProjectOxford.Face.dll"
       ]
     },
     "Microsoft.VisualBasic/10.0.0": {
@@ -16063,8 +16062,10 @@
       "Microsoft.ApplicationInsights.PersistenceChannel >= 1.0.0",
       "Microsoft.ApplicationInsights.WindowsApps >= 1.0.0",
       "Microsoft.NETCore.UniversalWindowsPlatform >= 5.0.0",
-      "Microsoft.ProjectOxford.Face >= 0.5.0.2"
+      "Microsoft.ProjectOxford.Face >= 1.1.0"
     ],
     "UAP,Version=v10.0": []
-  }
+  },
+  "tools": {},
+  "projectFileToolGroups": {}
 }

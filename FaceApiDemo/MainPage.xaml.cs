@@ -141,8 +141,8 @@ namespace FaceApiDemo
 
                     var recognizedFaces = await GetFaces(stream.AsStreamForRead());
                     var recommendations = GetRecommendations(recognizedFaces);
-                    var adults = recognizedFaces.Count(f => f.Attributes.Age >= 18);
-                    var children = recognizedFaces.Count(f => f.Attributes.Age < 18);
+                    var adults = recognizedFaces.Count(f => f.FaceAttributes.Age >= 18);
+                    var children = recognizedFaces.Count(f => f.FaceAttributes.Age < 18);
 
                     // Display recognition results
                     // Wait a few seconds seconds to give viewers a chance to appreciate all we've done
@@ -183,7 +183,7 @@ namespace FaceApiDemo
                         TextBlock faceInfoTextBlock = new TextBlock();
                         faceInfoTextBlock.Foreground = new SolidColorBrush(Colors.White);
                         faceInfoTextBlock.FontSize = 30;
-                        faceInfoTextBlock.Text = $"{GetGenderString(face.Attributes.Gender)}, {face.Attributes.Age}";
+                        faceInfoTextBlock.Text = $"{GetGenderString(face.FaceAttributes.Gender)}, {face.FaceAttributes.Age} YEARS OLD, {Math.Round(face.FaceAttributes.Smile * 100, 0)}% SMILING";
                         Border faceInfoBorder = new Border();
                         faceInfoBorder.Background = new SolidColorBrush(Colors.Black);
                         faceInfoBorder.Padding = new Thickness(5);
@@ -219,16 +219,16 @@ namespace FaceApiDemo
         private static async Task<Face[]> GetFaces(Stream stream)
         {
 
-            var result = await faceServiceClient.DetectAsync(stream, false, true, true, false);
+            var result = await faceServiceClient.DetectAsync(stream, returnFaceAttributes: new List<FaceAttributeType> { FaceAttributeType.Age, FaceAttributeType.Gender, FaceAttributeType.Smile });
             return result;
         }
 
         private string GetGenderString(string originalValue)
         {
             if (originalValue == "male")
-                return "férfi";
+                return "GENTLEMAN";
             else
-                return "nő";
+                return "LADY";
         }
 
         /// <summary>
@@ -241,8 +241,8 @@ namespace FaceApiDemo
 
             // First, let's see if this is a recognized group. 
             // If it is, assign a group recommendation to everyone.
-            int adults = faces.Count(f => f.Attributes.Age >= 18);
-            int children = faces.Count(f => f.Attributes.Age < 18);
+            int adults = faces.Count(f => f.FaceAttributes.Age >= 18);
+            int children = faces.Count(f => f.FaceAttributes.Age < 18);
             string groupRecommendation = null;
 
             #region Group recommendations
@@ -314,9 +314,9 @@ namespace FaceApiDemo
                 {
                     string individualRecommendation = "";
                     #region Male recommendations
-                    if (face.Attributes.Gender == "male")
+                    if (face.FaceAttributes.Gender == "male")
                     {
-                        if (face.Attributes.Age <= 18)
+                        if (face.FaceAttributes.Age <= 18)
                         {
                             individualRecommendation = GetRandomRecommendationFromList(new List<string>
                             {
@@ -324,7 +324,7 @@ namespace FaceApiDemo
                                 "K&H trambulin bankszámla"
                             });
                         }
-                        else if (face.Attributes.Age <= 25)
+                        else if (face.FaceAttributes.Age <= 25)
                         {
                             individualRecommendation = GetRandomRecommendationFromList(new List<string>
                             {
@@ -334,7 +334,7 @@ namespace FaceApiDemo
                                 "K&H lakásbiztosítás"
                             });
                         }
-                        else if (face.Attributes.Age <= 35)
+                        else if (face.FaceAttributes.Age <= 35)
                         {
                             individualRecommendation = GetRandomRecommendationFromList(new List<string>
                             {
@@ -345,7 +345,7 @@ namespace FaceApiDemo
                                 "Családok Otthonteremtési kedvezménye (CSOK)"
                             });
                         }
-                        else if (face.Attributes.Age <= 40)
+                        else if (face.FaceAttributes.Age <= 40)
                         {
                             individualRecommendation = GetRandomRecommendationFromList(new List<string>
                             {
@@ -370,7 +370,7 @@ namespace FaceApiDemo
                     #region Female recommendations
                     else
                     {
-                        if (face.Attributes.Age <= 18)
+                        if (face.FaceAttributes.Age <= 18)
                         {
                             individualRecommendation = GetRandomRecommendationFromList(new List<string>
                             {
@@ -378,7 +378,7 @@ namespace FaceApiDemo
                                 "K&H trambulin bankszámla"
                             });
                         }
-                        else if (face.Attributes.Age <= 25)
+                        else if (face.FaceAttributes.Age <= 25)
                         {
                             individualRecommendation = GetRandomRecommendationFromList(new List<string>
                             {
@@ -388,7 +388,7 @@ namespace FaceApiDemo
                                 "K&H lakásbiztosítás"
                             });
                         }
-                        else if (face.Attributes.Age <= 35)
+                        else if (face.FaceAttributes.Age <= 35)
                         {
                             individualRecommendation = GetRandomRecommendationFromList(new List<string>
                             {
@@ -398,7 +398,7 @@ namespace FaceApiDemo
                                 "K&H bővített plusz számlacsomag"
                             });
                         }
-                        else if (face.Attributes.Age <= 40)
+                        else if (face.FaceAttributes.Age <= 40)
                         {
                             individualRecommendation = GetRandomRecommendationFromList(new List<string>
                             {

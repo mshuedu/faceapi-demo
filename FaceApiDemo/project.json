@@ -4,7 +4,7 @@
     "Microsoft.ApplicationInsights.PersistenceChannel": "1.0.0",
     "Microsoft.ApplicationInsights.WindowsApps": "1.0.0",
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.0.0",
-    "Microsoft.ProjectOxford.Face": "0.5.0.2"
+    "Microsoft.ProjectOxford.Face": "1.1.0"
   },
   "frameworks": {
     "uap10.0": {}
