@@ -146,7 +146,7 @@ namespace FaceApiDemo
 
                     // Display recognition results
                     // Wait a few seconds seconds to give viewers a chance to appreciate all we've done
-                    await UpdateStatusAsync($"{adults} felnőtt, {children} gyerek. A tájékoztatás nem minősül ajánlattételnek, részletek a bankfiókban vagy a kh.hu-n.");
+                    await UpdateStatusAsync($"{adults} felnőtt, {children} gyerek.");
 
                     // The face rectangles received from Face API are measured in pixels of the raw image.
                     // We need to calculate the extra scaling and displacement that results from the raw image
@@ -199,7 +199,7 @@ namespace FaceApiDemo
                         TextBlock recommendationInfoTextBlock = new TextBlock();
                         recommendationInfoTextBlock.Foreground = new SolidColorBrush(Colors.White);
                         recommendationInfoTextBlock.FontSize = 30;
-                        recommendationInfoTextBlock.Text = recommendation;
+                        recommendationInfoTextBlock.Text = "";
                         Border recommendationInfoBorder = new Border();
                         recommendationInfoBorder.Background = new SolidColorBrush(Colors.Black);
                         recommendationInfoBorder.Padding = new Thickness(5);
