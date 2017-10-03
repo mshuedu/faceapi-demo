@@ -32,7 +32,7 @@ namespace FaceApiDemo
 {
     public sealed partial class MainPage : Page
     {
-        private const string FaceApiKey = "c43de4470d9c41dabc5292d3356098ec";
+        private const string FaceApiKey = "c890df660850473587da5757dafafbb8";
         private const int ControlLoopDelayMilliseconds = 5000; // Update the CountdownStoryboard as well!
         private static readonly FaceServiceClient faceServiceClient = new FaceServiceClient(FaceApiKey);
 
